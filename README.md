@@ -7,7 +7,7 @@ A: *If two boxes in any unit(column_units, row_units, square_units, diagonal_uni
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Add all diagonal_units of sudoku to unit_list i.e 2 diagonal units. *
+A: *Add all diagonal_units of sudoku to unit list, units, peers i.e 2 diagonal units.*
 
 ### Install
 
