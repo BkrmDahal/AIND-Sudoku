@@ -1,3 +1,19 @@
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+def cross(a, b):
+    return [s+t for s in a for t in b]
+
+boxes = cross(rows, cols)
+
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+diagonal_unit = [list(i+j for i,j in zip(rows,cols))]+[list(i+j for i, j in zip(rows[::-1], cols))]
+unitlist = row_units + column_units + square_units + diagonal_unit
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
 assignments = []
 
 def assign_value(values, box, value):
@@ -55,6 +71,14 @@ def grid_values(grid):
     return (dict(zip(boxes, grid)))
     pass
     
+def replace(values):
+    """Replace all '.' with '123456789'
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form."""
+    for i in values.keys():
+        if values[i]=='.':
+            assign_value(values, i, '123456789')
+    return values
 
 def display(values):
     """
@@ -99,12 +123,12 @@ def only_choice(values):
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
-                new_values[dplaces[0]] = digit
+                assign_value(new_values, dplaces[0], digit)
     return new_values
     pass
 
 def reduce_puzzle(values):
-     """
+    """
     Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
     If the sudoku is solved, return the sudoku.
     If after an iteration of both functions, the sudoku remains the same, return the sudoku.
@@ -120,8 +144,8 @@ def reduce_puzzle(values):
         values = eliminate(values)
         # Use the Only Choice Strategy
         values = only_choice(values)
-        # use nakes twin
-        values  = naked_twin(values)
+        #use nakes twin
+        values  = naked_twins(values)
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
@@ -130,7 +154,7 @@ def reduce_puzzle(values):
         if len([box for box in values.keys() if len(values[box]) == 0]):
             return False
     return values
-    pass
+
 
 def search(values):
     "Using depth-first search and propagation, try all possible values."
@@ -165,7 +189,8 @@ def solve(grid):
     values = search(values)
     if all(len(values[s]) != 1 for s in boxes):
         return False
-    return values
+    else:
+        return values
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
