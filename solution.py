@@ -1,20 +1,5 @@
-rows = 'ABCDEFGHI'
-cols = '123456789'
-
-def cross(a, b):
-    return [s+t for s in a for t in b]
-
-boxes = cross(rows, cols)
-
-row_units = [cross(r, cols) for r in rows]
-column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-diagonal_unit = [list(i+j for i,j in zip(rows,cols))]+[list(i+j for i, j in zip(rows[::-1], cols))]
-unitlist = row_units + column_units + square_units + diagonal_unit
-units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
-
 assignments = []
+
 
 def assign_value(values, box, value):
     """
@@ -25,6 +10,7 @@ def assign_value(values, box, value):
     if len(value) == 1:
         assignments.append(values.copy())
     return values
+
 
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
@@ -50,10 +36,12 @@ def naked_twins(values):
                             assign_value(values, box, value)
     return values
 
+
 def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [i + j for i in A for j in B]
     pass
+
 
 def grid_values(grid):
     """
@@ -66,19 +54,20 @@ def grid_values(grid):
             Values: The value in each box, e.g., '8'. If the box has no value, then the value will be '123456789'.
     """
     grid = list(grid)
-
     assert len(grid) == 81, "Your grid must contain 81 character "
     return (dict(zip(boxes, grid)))
     pass
-    
+
+
 def replace(values):
     """Replace all '.' with '123456789'
     Input: A sudoku in dictionary form.
     Output: The resulting sudoku in dictionary form."""
     for i in values.keys():
-        if values[i]=='.':
+        if values[i] == '.':
             assign_value(values, i, '123456789')
     return values
+
 
 def display(values):
     """
@@ -95,6 +84,7 @@ def display(values):
     return
     pass
 
+
 def eliminate(values):
     """
     Go through all the boxes, and whenever there is a box with a value, eliminate this value from the values of all its peers.
@@ -108,6 +98,7 @@ def eliminate(values):
             assign_value(values, peer, values[peer].replace(digit, ''))
     return values
     pass
+
 
 def only_choice(values):
     """Finalize all values that are the only choice for a unit.
@@ -127,6 +118,7 @@ def only_choice(values):
     return new_values
     pass
 
+
 def reduce_puzzle(values):
     """
     Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
@@ -144,8 +136,8 @@ def reduce_puzzle(values):
         values = eliminate(values)
         # Use the Only Choice Strategy
         values = only_choice(values)
-        #use nakes twin
-        values  = naked_twins(values)
+        # Use naked twin Strategy
+        values = naked_twins(values)
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
@@ -157,7 +149,7 @@ def reduce_puzzle(values):
 
 
 def search(values):
-    "Using depth-first search and propagation, try all possible values."
+    " Using depth-first search and propagation, try all possible values."
     # First, reduce the puzzle using the previous function
     values = reduce_puzzle(values)
     if values is False:
@@ -175,14 +167,15 @@ def search(values):
             return attempt
     pass
 
+
 def solve(grid):
     """
     Find the solution to a Sudoku grid.
     Args:
-        grid(string): a string representing a sudoku grid.
+        grid(string): a string representing a Sudoku grid.
             Example: '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     Returns:
-        The dictionary representation of the final sudoku grid. False if no solution exists.
+        The dictionary representation of the final Sudoku grid. False if no solution exists.
     """
     values = grid_values(grid)
     values = replace(values)
@@ -192,12 +185,28 @@ def solve(grid):
     else:
         return values
 
+
+# Sudoku Units
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+boxes = cross(rows, cols)
+
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
+diagonal_unit = [list(i + j for i, j in zip(rows, cols))] + [list(i + j for i, j in zip(rows[::-1], cols))]
+unitlist = row_units + column_units + square_units + diagonal_unit
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s], [])) - set([s])) for s in boxes)
+
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     display(solve(diag_sudoku_grid))
 
     try:
         from visualize import visualize_assignments
+
         visualize_assignments(assignments)
 
     except SystemExit:
